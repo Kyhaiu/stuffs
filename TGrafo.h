@@ -286,7 +286,6 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
         return q->getList();
     }
     TNo<Vertice>* noV = getVertice(_x, _y); ///ponteiro que contem a referencia para o nó do vertice inicial
-    TNo<Vertice>* noAux; ///no auxiliar utilizado na busca
     TNo<Aresta>*  noA; ///no que contem a referencia para a lista de Adjacencia de cada vertice
     vector<Vertice> vect; /// vetor de Vertices já percorridos
     bool jaVisitado = false; ///flag para indicar se o vertice está no vetor de vertices percorridos
@@ -294,27 +293,24 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
     vect.push_back(noV->getinfo()); ///insere o vertice inicial no vetor
     q->enqueue(noV->getinfo()); ///coloca na fila
     TLista<Vertice>* l = new TLista<Vertice>();
-
-    while(q->Size() > 0){ ///enquanto a pilha nao for vazia ele nao para
-        noA = noV->getinfo().getLArestas()->getprim(); ///primeiro elemento da lista de adjacencia do vertice atual
+    while(q->Size() > 0){
+        noA = q->dequeue().getLArestas()->getprim();
         while(noA != nullptr){
-            noAux = getVerticeId(noA->getinfo().getid_dest()); ///funcao retorna a referencia do id de destino da lista de adjacencia
-            for(int i = 0; i < (int)vect.size(); i++){ ///percorre o vetor de vertices ja percorridos, caso ele encontre a flag vira true e ele para
-                if(vect[i].getid() == noAux->getinfo().getid()){
+            for(int i = 0; i < (int)vect.size(); i++){
+                if(vect[i].getid() == noA->getinfo().getid_dest()){
                     jaVisitado = true;
                     break;
                 } else{
                     jaVisitado = false;
                 }
             }
-            if(!jaVisitado){ /// so coloca na pilha e no vetor de nos visitados os vertices que ainda nao foram visitados
-                q->enqueue(noAux->getinfo());
-                vect.push_back(noAux->getinfo());
+            if(!jaVisitado){
+                l->ins_fim(getVerticeId(noA->getinfo().getid_dest())->getinfo());
+                vect.push_back(getVerticeId(noA->getinfo().getid_dest())->getinfo());
+                q->enqueue(getVerticeId(noA->getinfo().getid_dest())->getinfo());
             }
             noA = noA->getprox();
         }
-        noV = getVerticeId(q->dequeue().getid()); ///pega o primeiro elemento da fila e se torna o novo no
-        l->ins_fim(noV->getinfo()); ///coloca na lista o vertice atual
     }
     noV = l->getprim();
     system("cls");
@@ -346,7 +342,6 @@ TLista<Vertice>* TGrafo::buscaProfundiade(float _x, float _y){
         return stck->getList();
     }
     TNo<Vertice>* noV = getVertice(_x, _y);
-    TNo<Vertice>* noAux;
     TNo<Aresta>*  noA;
     vector<Vertice> vect;
     bool seen = false;
@@ -422,7 +417,7 @@ void TGrafo::dijkstra(float xi, float yi, float xf, float yf){
     } else if(_destino == -1){
         cout << "Destino nao encontrado" << endl;
     }
-    double mat[4][getordem()];
+    double mat[getordem()][4];
     int i = 0;
     TNo<Vertice>* v = LVertices->getprim();
     int  aux;
@@ -431,17 +426,67 @@ void TGrafo::dijkstra(float xi, float yi, float xf, float yf){
         if(aux == _origem){
             mat[i][0] = aux;
             mat[i][1] = 0;
-            mat[i][2] = aux;
-            mat[i][3] = 1;
+            mat[i][2] = 0;
+            mat[i][3] = -1;
         } else{
             mat[i][0] = aux;
-            mat[i][1] = inf;
-            mat[i][2] = -1;
-            mat[i][3] = 0;
+            mat[i][1] = 0;
+            mat[i][2] = inf;
+            mat[i][3] = -1;
         }
         i++;
         v = v->getprox();
     }
+    TNo<Vertice>* noV = getVerticeId(get<0>(getVerticePerXY(xi, yi)));
+    TNo<Aresta>* noA;
+
+    i = _origem;
+    int j, menor;
+    double k;
+
+    while(!mat[i][1] || i == _origem){
+        mat[i][1] = 1;
+        noA = noV->getinfo().getLArestas()->getprim();
+        while(noA != nullptr){
+            j = noA->getinfo().getid_dest();
+            if(mat[j][1] == 0){
+                k = mat[i][2] + noA->getinfo().getpeso();
+                //cout << k << endl;
+                if(mat[j][2] > k && mat[j][1] == 0){
+                    mat[j][2] = k;
+                    mat[j][3] = mat[i][0];
+                }
+            }
+            noA = noA->getprox();
+        }
+        j = 0;
+        if(j == 0 && mat[j][2] > 0){
+            menor = mat[j][0];
+        } else{
+            menor = mat[j+1][0];
+        }
+        while(j < (int)getordem()){
+            if(mat[menor][2] > mat[j][2] && mat[menor][2] != 0 && mat[j][1] == 0){
+                menor = mat[j][0];
+            }
+            j++;
+        }
+        noV = getVerticeId(menor);
+        i = menor;
+    }
+    i = 0;
+    while(mat[i][1]){
+        i++;
+    }
+    mat[i][1] = 1;
+
+    for(int i = 0; i < (int)getordem(); i++){
+        for(int j = 0; j < 4; j++){
+            cout << "| " << mat[i][j] << " ";
+        }
+        cout << "|" << endl;
+    }
+    system("PAUSE");
 }
 
 TGrafo::~TGrafo(){

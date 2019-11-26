@@ -6,6 +6,7 @@
 #include "TLista.h"
 #include "Vertice.h"
 #include "TStack.h"
+#include "TQueue.h"
 
 #define inf 2147483647;
 
@@ -30,6 +31,7 @@ public:
    TLista<Vertice>* getLVertices();
    tuple<int, float, float> getVerticePerXY(float _x, float _y);
    tuple<int, float, float> getVerticePerId(int _id);
+   TNo<Vertice>* getVertice(float _x, float _y);
    int AddVertice(string _name, float _x, float _y);
    void RemVertice(int _id);
    bool AddAresta(int _origem, int _destino, string _name, double _peso, bool _bidir);
@@ -118,6 +120,17 @@ tuple<int, float, float> TGrafo::getVerticePerId(int _id){
     get<1>(ver) = 0;
     get<2>(ver) = 0;
     return ver;
+}
+
+TNo<Vertice>* TGrafo::getVertice(float _x, float _y){
+    TNo<Vertice>* no = getLVertices()->getprim();
+    while(no != nullptr){
+        if(no->getinfo().getX() == _x && no->getinfo().getY() == _y){
+            break;
+        }
+        no = no->getprox();
+    }
+    return no;
 }
 
 int TGrafo::AddVertice(string _name, float _x, float _y){
@@ -253,7 +266,33 @@ void TGrafo::Print(){
 }
 
 TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
-    TStack<Vertice>* stk = new TStack<Vertice>();
+    TQueue<Vertice>* q = new TQueue<Vertice>();
+    if(get<0>(getVerticePerXY(_x, _y)) == -1){
+        cout << "Erro vertice inexistente!" << endl;
+        return q->getList();
+    }
+    TNo<Vertice>* ver = getVertice(_x, _y);
+    TNo<Vertice>* aux;
+    TNo<Aresta>* a;
+    q->enqueue(ver->getinfo());
+    Vertice aux2;
+
+    TLista<Vertice>* lista = new TLista<Vertice>();
+    lista->ins_fim(ver->getinfo());
+    while(ver != nullptr){
+        a = ver->getinfo().getLArestas()->getprim();
+        aux = getVertice(get<1>(getVerticePerId(a->getinfo().getid_dest())), get<2>(getVerticePerId(a->getinfo().getid_dest())));
+        while(a != nullptr){
+            q->enqueue(aux->getinfo());
+            aux->getinfo().setVisited(true);
+            a = a->getprox();
+            if(a == nullptr) break;
+            aux = getVertice(get<1>(getVerticePerId(a->getinfo().getid_dest())), get<2>(getVerticePerId(a->getinfo().getid_dest())));
+        }
+        aux2 = q->dequeue();
+        cout << aux2.getX() << " " << aux2.getY() << endl;
+        ver = getVertice(aux2.getX(), aux2.getY());
+    }
 }
 
 void TGrafo::dijkstra(float xi, float yi, float xf, float yf){

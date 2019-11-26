@@ -132,7 +132,7 @@ void menu(){
             g->Print();
             system("PAUSE");
         } else if(i == 2 && lido){
-
+            g->buscaAmplitude(6, 6);
         } else if(i == 3 && lido){
 
         } else if(i == 4 && lido){

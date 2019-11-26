@@ -8,6 +8,7 @@
 #include "TStack.h"
 #include "TQueue.h"
 #include <vector>
+#include <algorithm>
 
 #define inf 2147483647;
 
@@ -39,6 +40,7 @@ public:
    bool AddAresta(int _origem, int _destino, string _name, double _peso, bool _bidir);
    void RemAresta(int _origem, int _destino, bool _bidir);
    TLista<Vertice>* buscaAmplitude(float _x, float _y);
+   TLista<Vertice>* buscaProfundiade(float _x, float _y);
    void dijkstra(float xi, float yi, float xf, float yf);
    void Print();
    ~TGrafo();
@@ -284,22 +286,21 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
         cout << "Erro vertice inexistente!" << endl;
         return q->getList();
     }
-    TNo<Vertice>* noV = getVertice(_x, _y);
-    TNo<Vertice>* noAux;
-    TNo<Aresta>*  noA;
-    vector<Vertice> vect;
-    bool jaVisitado = false;
+    TNo<Vertice>* noV = getVertice(_x, _y); ///ponteiro que contem a referencia para o nó do vertice inicial
+    TNo<Vertice>* noAux; ///no auxiliar utilizado na busca
+    TNo<Aresta>*  noA; ///no que contem a referencia para a lista de Adjacencia de cada vertice
+    vector<Vertice> vect; /// vetor de Vertices já percorridos
+    bool jaVisitado = false; ///flag para indicar se o vertice está no vetor de vertices percorridos
 
-    vect.push_back(noV->getinfo());
-    q->enqueue(noV->getinfo());
+    vect.push_back(noV->getinfo()); ///insere o vertice inicial no vetor
+    q->enqueue(noV->getinfo()); ///coloca na fila
     TLista<Vertice>* l = new TLista<Vertice>();
-    //l->ins_fim(noV->getinfo());
 
-    while(q->Size() > 0){
-        noA = noV->getinfo().getLArestas()->getprim();
+    while(q->Size() > 0){ ///enquanto a pilha nao for vazia ele nao para
+        noA = noV->getinfo().getLArestas()->getprim(); ///primeiro elemento da lista de adjacencia do vertice atual
         while(noA != nullptr){
-            noAux = getVerticeId(noA->getinfo().getid_dest());
-            for(int i = 0; i < vect.size(); i++){
+            noAux = getVerticeId(noA->getinfo().getid_dest()); ///funcao retorna a referencia do id de destino da lista de adjacencia
+            for(int i = 0; i < (int)vect.size(); i++){ ///percorre o vetor de vertices ja percorridos, caso ele encontre a flag vira true e ele para
                 if(vect[i].getid() == noAux->getinfo().getid()){
                     jaVisitado = true;
                     break;
@@ -307,19 +308,104 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
                     jaVisitado = false;
                 }
             }
-            if(!jaVisitado){
+            if(!jaVisitado){ /// so coloca na pilha e no vetor de nos visitados os vertices que ainda nao foram visitados
                 q->enqueue(noAux->getinfo());
                 vect.push_back(noAux->getinfo());
             }
             noA = noA->getprox();
         }
-        noV = getVerticeId(q->dequeue().getid());
-        l->ins_fim(noV->getinfo());
+        noV = getVerticeId(q->dequeue().getid()); ///pega o primeiro elemento da fila e se torna o novo no
+        l->ins_fim(noV->getinfo()); ///coloca na lista o vertice atual
     }
     noV = l->getprim();
+    system("cls");
+    cout << "Caminho percorrido pela busca em amplitude:" << endl;
+    cout << "------------------------------------------------" << endl;
+    cout << "|\tID\t|\tX\t|\tY\t|" << endl;
+    cout << "------------------------------------------------" << endl;
     while(noV != nullptr){
-        cout << noV->getinfo().getX() << " " << noV->getinfo().getY() << endl;
+        cout << "|\t" << noV->getinfo().getid() << "\t|\t"
+             << noV->getinfo().getX() << "\t|\t"
+             << noV->getinfo().getY() << "\t|\t" << endl;
+        cout << "-----------------------------------------------" << endl;
         noV = noV->getprox();
+    }
+    if((int)l->size() == getordem()){ /// verifica se o tamanho da lista é = a ordem do grafo
+        cout << "\n Foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
+    } else{
+        cout << "\n\n Nao foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
+    }
+    system("PAUSE");
+    return l;
+}
+
+TLista<Vertice>* TGrafo::buscaProfundiade(float _x, float _y){
+    TStack<Vertice>* stck = new TStack<Vertice>();
+    TStack<Vertice>* stcka = new TStack<Vertice>();
+    if(get<0>(getVerticePerXY(_x, _y)) == -1){
+        cout << "Erro vertice inexistente!" << endl;
+        return stck->getList();
+    }
+    TNo<Vertice>* noV = getVertice(_x, _y);
+    TNo<Vertice>* noAux;
+    TNo<Aresta>*  noA;
+    vector<Vertice> vect;
+    bool seen = false;
+
+    stck->push(noV->getinfo()); ///coloca na fila
+    TLista<Vertice>* l = new TLista<Vertice>();
+    l->ins_fim(stck->top());
+    while(stck->Size() > 0){
+        for(int i = 0; i < (int)vect.size(); i++){
+                if(vect[i].getid() != stck->top().getid()){
+                    seen = true;
+                } else{
+                    seen = false;
+                    break;
+                }
+            }
+        if(seen){
+            l->ins_fim(stck->top());
+        }
+        vect.push_back(stck->top());
+        noA = stck->top().getLArestas()->getprim();
+        stck->pop();
+        while(noA != nullptr){
+            for(int i = 0; i < (int)vect.size(); i++){
+                if(vect[i].getid() != noA->getinfo().getid_dest()){
+                    seen = true;
+                } else{
+                    seen = false;
+                    break;
+                }
+            }
+            if(seen){
+                stcka->push(getVerticeId(noA->getinfo().getid_dest())->getinfo());
+            }
+            noA = noA->getprox();
+        }
+        while(stcka->Size() > 0){
+            stck->push(stcka->top());
+            stcka->pop();
+        }
+    }
+    noV = l->getprim();
+    system("cls");
+    cout << "Caminho percorrido pela busca em amplitude:" << endl;
+    cout << "------------------------------------------------" << endl;
+    cout << "|\tID\t|\tX\t|\tY\t|" << endl;
+    cout << "------------------------------------------------" << endl;
+    while(noV != nullptr){
+        cout << "|\t" << noV->getinfo().getid() << "\t|\t"
+             << noV->getinfo().getX() << "\t|\t"
+             << noV->getinfo().getY() << "\t|\t" << endl;
+        cout << "-----------------------------------------------" << endl;
+        noV = noV->getprox();
+    }
+    if((int)l->size() == getordem()){ /// verifica se o tamanho da lista é = a ordem do grafo
+        cout << "\n Foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
+    } else{
+        cout << "\n\n Nao foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
     }
     system("PAUSE");
     return l;

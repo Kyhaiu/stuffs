@@ -141,9 +141,9 @@ int TGrafo::AddVertice(string _name, float _x, float _y){
    V.setname(_name);
    V.setX(_x);
    V.setY(_y);
+   V.setVisited(false);
    LVertices->ins_fim(V);
    ++ordem;
-   V.setVisited(false);
    return(autoid - 1);
 }
 
@@ -283,8 +283,12 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
         a = ver->getinfo().getLArestas()->getprim();
         aux = getVertice(get<1>(getVerticePerId(a->getinfo().getid_dest())), get<2>(getVerticePerId(a->getinfo().getid_dest())));
         while(a != nullptr){
-            q->enqueue(aux->getinfo());
-            aux->getinfo().setVisited(true);
+            if(!aux->getinfo().isVisited()){
+                aux->getinfo().setVisited(true);
+                cout << aux->getinfo().isVisited() << " " << aux->getinfo().getX() << " "
+                     << aux->getinfo().getY() << endl;
+                q->enqueue(aux->getinfo());
+            }
             a = a->getprox();
             if(a == nullptr) break;
             aux = getVertice(get<1>(getVerticePerId(a->getinfo().getid_dest())), get<2>(getVerticePerId(a->getinfo().getid_dest())));

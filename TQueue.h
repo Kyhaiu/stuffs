@@ -10,6 +10,7 @@ template<typename T> class TQueue{
         void enqueue(T _info);
         T dequeue();
         TLista<T>* getList();
+        int Size();
 };
 
 template<typename T>TQueue<T>::TQueue(){
@@ -28,6 +29,10 @@ template<typename T> T TQueue<T>::dequeue(){
 
 template<typename T>TLista<T>* TQueue<T>::getList(){
     return Q;
+}
+
+template<typename T> int TQueue<T>::Size(){
+    return Q->size();
 }
 
 #endif // TQUEUE_H_INCLUDED

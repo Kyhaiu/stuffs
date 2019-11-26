@@ -7,6 +7,7 @@
 #include "Vertice.h"
 #include "TStack.h"
 #include "TQueue.h"
+#include <vector>
 
 #define inf 2147483647;
 
@@ -153,7 +154,6 @@ int TGrafo::AddVertice(string _name, float _x, float _y){
    V->setname(_name);
    V->setX(_x);
    V->setY(_y);
-   V->setVisited(false);
    LVertices->ins_fim(*V);
    ++ordem;
    free(V);
@@ -287,28 +287,41 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
     TNo<Vertice>* noV = getVertice(_x, _y);
     TNo<Vertice>* noAux;
     TNo<Aresta>*  noA;
-    noV->getinfo().setVisited(true);
+    vector<Vertice> vect;
+    bool jaVisitado = false;
+
+    vect.push_back(noV->getinfo());
     q->enqueue(noV->getinfo());
     TLista<Vertice>* l = new TLista<Vertice>();
-    l->ins_fim(noV->getinfo());
-    while(noV != nullptr){
+    //l->ins_fim(noV->getinfo());
+
+    while(q->Size() > 0){
         noA = noV->getinfo().getLArestas()->getprim();
         while(noA != nullptr){
             noAux = getVerticeId(noA->getinfo().getid_dest());
-            if(noAux->getinfo().isVisited() == false){
-                noAux->getinfo().setVisited(true);
+            for(int i = 0; i < vect.size(); i++){
+                if(vect[i].getid() == noAux->getinfo().getid()){
+                    jaVisitado = true;
+                    break;
+                } else{
+                    jaVisitado = false;
+                }
+            }
+            if(!jaVisitado){
                 q->enqueue(noAux->getinfo());
+                vect.push_back(noAux->getinfo());
             }
             noA = noA->getprox();
         }
-        if(q != nullptr){
-            noV = getVerticeId(q->dequeue().getid());
-            l->ins_fim(noV->getinfo());
-            //cout << noV->getinfo().isVisited() << " " << noV->getinfo().getid() << endl;
-        } else{
-            noV = nullptr;
-        }
+        noV = getVerticeId(q->dequeue().getid());
+        l->ins_fim(noV->getinfo());
     }
+    noV = l->getprim();
+    while(noV != nullptr){
+        cout << noV->getinfo().getX() << " " << noV->getinfo().getY() << endl;
+        noV = noV->getprox();
+    }
+    system("PAUSE");
     return l;
 }
 

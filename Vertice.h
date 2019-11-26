@@ -14,7 +14,6 @@ class Vertice{
    string name;
    float x;
    float y;
-   bool visited;
    TLista<Aresta>* LArestas;
 public:
    Vertice();
@@ -22,12 +21,10 @@ public:
    string getname();
    float getX();
    float getY();
-   bool isVisited();
    void setid(int _id);
    void setname(string _name);
    void setX(float _x);
    void setY(float _y);
-   void setVisited(bool isVisited);
    TLista<Aresta>* getLArestas();
    void Add_Aresta(int _destino, string _name, double _peso);
    bool Rem_Aresta (int _id);
@@ -56,13 +53,6 @@ float Vertice::getY(){
     return y;
 }
 
-bool Vertice::isVisited(){
-    if(visited){
-        return true;
-    }
-    return false;
-}
-
 void Vertice::setid(int _id){
    id = _id;
 }
@@ -77,10 +67,6 @@ void Vertice::setX(float _x){
 
 void Vertice::setY(float _y){
     y = _y;
-}
-
-void Vertice::setVisited(bool isVisisted){
-    visited = isVisisted;
 }
 
 TLista<Aresta>* Vertice::getLArestas(){

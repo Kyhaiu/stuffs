@@ -8,7 +8,6 @@
 #include "TStack.h"
 #include "TQueue.h"
 #include <vector>
-#include <algorithm>
 
 #define inf 2147483647;
 

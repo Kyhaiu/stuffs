@@ -33,7 +33,7 @@ void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa,
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
             grafo->AddAresta(id-2, id-1, name, dist, false);
         } else if(imp_negativa == -1){ /// se a impedancia negatica for = -1 entao tem sentido fim inicio
-            name = "Aresta " + to_string(id-2) + "->" + to_string(id-1);
+            name = "Aresta " + to_string(id-1) + "->" + to_string(id-2);
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
             grafo->AddAresta(id-1, id-2, name, dist, false);
         }
@@ -44,15 +44,15 @@ void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa,
         if(imp_positiva != -1 && imp_negativa != -1){
             name = "Aresta " + to_string(id-1) + "<->" + to_string(get<0>(verF));
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
-            grafo->AddAresta(get<0>(verF), id-1, name, dist, true);
+            grafo->AddAresta(id-1, get<0>(verF), name, dist, true);
         } else if(imp_positiva == -1){
             name = "Aresta " + to_string(id-1) + "->" + to_string(get<0>(verF));
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
-            grafo->AddAresta(get<0>(verF), id-1, name, dist, false);
+            grafo->AddAresta(id-1, get<0>(verF), name, dist, false);
         } else if(imp_negativa == -1){
             name = "Aresta " + to_string(get<0>(verF)) + "->" + to_string(id-1);
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
-            grafo->AddAresta(id-1, get<0>(verF), name, dist, false);
+            grafo->AddAresta(get<0>(verF), id-1, name, dist, false);
         }
     } else if(get<0>(verF) == -1){
         name = "Vertice " + to_string(id);
@@ -73,17 +73,17 @@ void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa,
         }
     }else{
         if(imp_positiva != -1 && imp_negativa != -1){
-            name = "Aresta " + to_string(get<0>(verI)) + "<->" + to_string(id-1);
+            name = "Aresta " + to_string(get<0>(verI)) + "<->" + to_string(get<0>(verF));
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
-            grafo->AddAresta(get<0>(verI), id-1, name, dist, true);
+            grafo->AddAresta(get<0>(verI), get<0>(verF) , name, dist, true);
         } else if(imp_positiva == -1){
-            name = "Aresta " + to_string(get<0>(verI)) + "->" + to_string(id-1);
+            name = "Aresta " + to_string(get<0>(verI)) + "->" + to_string(get<0>(verF));
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
-            grafo->AddAresta(get<0>(verI), id-1, name, dist, false);
+            grafo->AddAresta(get<0>(verI), get<0>(verF), name, dist, false);
         } else if(imp_negativa == -1){
-            name = "Aresta " + to_string(id-1) + "->" + to_string(get<0>(verI));
+            name = "Aresta " + to_string(get<0>(verF)) + "->" + to_string(get<0>(verI));
             dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
-            grafo->AddAresta(id-1, get<0>(verI), name, dist, false);
+            grafo->AddAresta(get<0>(verF), get<0>(verI), name, dist, false);
         }
     }
 }
@@ -132,7 +132,7 @@ void menu(){
             g->Print();
             system("PAUSE");
         } else if(i == 2 && lido){
-            g->buscaAmplitude(6, 6);
+            g->buscaAmplitude(6,6);
         } else if(i == 3 && lido){
 
         } else if(i == 4 && lido){

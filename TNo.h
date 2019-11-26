@@ -9,7 +9,7 @@ template <typename T> class TNo{
    public:
       TNo();
       TNo(const TNo<T> &No);
-      void setinfo(const T &_info);
+      void setinfo(T _info);
       T getinfo();
       void setprox(TNo<T> *_prox);
       TNo<T>* getprox();
@@ -27,7 +27,7 @@ template<typename T> TNo<T>::TNo(const TNo<T> &No){
    prox = No.prox;
 }
 
-template<typename T> void TNo<T>::setinfo(const T &_info){
+template<typename T> void TNo<T>::setinfo(T _info){
    info = _info;
 }
 

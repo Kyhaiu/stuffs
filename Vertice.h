@@ -57,7 +57,10 @@ float Vertice::getY(){
 }
 
 bool Vertice::isVisited(){
-    return visited;
+    if(visited){
+        return true;
+    }
+    return false;
 }
 
 void Vertice::setid(int _id){

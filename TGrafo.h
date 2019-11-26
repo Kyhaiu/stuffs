@@ -32,6 +32,7 @@ public:
    tuple<int, float, float> getVerticePerXY(float _x, float _y);
    tuple<int, float, float> getVerticePerId(int _id);
    TNo<Vertice>* getVertice(float _x, float _y);
+   TNo<Vertice>* getVerticeId(int _id);
    int AddVertice(string _name, float _x, float _y);
    void RemVertice(int _id);
    bool AddAresta(int _origem, int _destino, string _name, double _peso, bool _bidir);
@@ -133,17 +134,29 @@ TNo<Vertice>* TGrafo::getVertice(float _x, float _y){
     return no;
 }
 
-int TGrafo::AddVertice(string _name, float _x, float _y){
-   Vertice V;
+TNo<Vertice>* TGrafo::getVerticeId(int _id){
+    TNo<Vertice>* no = getLVertices()->getprim();
+    while(no != nullptr){
+        if(no->getinfo().getid() == _id){
+            break;
+        }
+        no = no->getprox();
+    }
+    return no;
+}
 
-   V.setid(autoid);
+int TGrafo::AddVertice(string _name, float _x, float _y){
+   Vertice *V = new Vertice();
+
+   V->setid(autoid);
    ++autoid;
-   V.setname(_name);
-   V.setX(_x);
-   V.setY(_y);
-   V.setVisited(false);
-   LVertices->ins_fim(V);
+   V->setname(_name);
+   V->setX(_x);
+   V->setY(_y);
+   V->setVisited(false);
+   LVertices->ins_fim(*V);
    ++ordem;
+   free(V);
    return(autoid - 1);
 }
 
@@ -271,32 +284,32 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
         cout << "Erro vertice inexistente!" << endl;
         return q->getList();
     }
-    TNo<Vertice>* ver = getVertice(_x, _y);
-    TNo<Vertice>* aux;
-    TNo<Aresta>* a;
-    q->enqueue(ver->getinfo());
-    Vertice aux2;
-
-    TLista<Vertice>* lista = new TLista<Vertice>();
-    lista->ins_fim(ver->getinfo());
-    while(ver != nullptr){
-        a = ver->getinfo().getLArestas()->getprim();
-        aux = getVertice(get<1>(getVerticePerId(a->getinfo().getid_dest())), get<2>(getVerticePerId(a->getinfo().getid_dest())));
-        while(a != nullptr){
-            if(!aux->getinfo().isVisited()){
-                aux->getinfo().setVisited(true);
-                cout << aux->getinfo().isVisited() << " " << aux->getinfo().getX() << " "
-                     << aux->getinfo().getY() << endl;
-                q->enqueue(aux->getinfo());
+    TNo<Vertice>* noV = getVertice(_x, _y);
+    TNo<Vertice>* noAux;
+    TNo<Aresta>*  noA;
+    noV->getinfo().setVisited(true);
+    q->enqueue(noV->getinfo());
+    TLista<Vertice>* l = new TLista<Vertice>();
+    l->ins_fim(noV->getinfo());
+    while(noV != nullptr){
+        noA = noV->getinfo().getLArestas()->getprim();
+        while(noA != nullptr){
+            noAux = getVerticeId(noA->getinfo().getid_dest());
+            if(noAux->getinfo().isVisited() == false){
+                noAux->getinfo().setVisited(true);
+                q->enqueue(noAux->getinfo());
             }
-            a = a->getprox();
-            if(a == nullptr) break;
-            aux = getVertice(get<1>(getVerticePerId(a->getinfo().getid_dest())), get<2>(getVerticePerId(a->getinfo().getid_dest())));
+            noA = noA->getprox();
         }
-        aux2 = q->dequeue();
-        cout << aux2.getX() << " " << aux2.getY() << endl;
-        ver = getVertice(aux2.getX(), aux2.getY());
+        if(q != nullptr){
+            noV = getVerticeId(q->dequeue().getid());
+            l->ins_fim(noV->getinfo());
+            //cout << noV->getinfo().isVisited() << " " << noV->getinfo().getid() << endl;
+        } else{
+            noV = nullptr;
+        }
     }
+    return l;
 }
 
 void TGrafo::dijkstra(float xi, float yi, float xf, float yf){

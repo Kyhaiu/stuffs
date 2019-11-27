@@ -451,8 +451,7 @@ void TGrafo::dijkstra(float xi, float yi, float xf, float yf){
             j = noA->getinfo().getid_dest();
             if(mat[j][1] == 0){
                 k = mat[i][2] + noA->getinfo().getpeso();
-                //cout << k << endl;
-                if(mat[j][2] > k && mat[j][1] == 0){
+                if(mat[j][2] > k){
                     mat[j][2] = k;
                     mat[j][3] = mat[i][0];
                 }
@@ -460,13 +459,13 @@ void TGrafo::dijkstra(float xi, float yi, float xf, float yf){
             noA = noA->getprox();
         }
         j = 0;
-        if(j == 0 && mat[j][2] > 0){
-            menor = mat[j][0];
-        } else{
-            menor = mat[j+1][0];
+        while(mat[j][1] == 1){
+            j++;
         }
+        menor = j;
+        j = 0;
         while(j < (int)getordem()){
-            if(mat[menor][2] > mat[j][2] && mat[menor][2] != 0 && mat[j][1] == 0){
+            if(mat[menor][2] > mat[j][2] && mat[j][2] != 0 && mat[j][1] == 0){
                 menor = mat[j][0];
             }
             j++;
@@ -474,6 +473,7 @@ void TGrafo::dijkstra(float xi, float yi, float xf, float yf){
         noV = getVerticeId(menor);
         i = menor;
     }
+
     i = 0;
     while(mat[i][1]){
         i++;

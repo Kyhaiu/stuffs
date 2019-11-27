@@ -40,7 +40,7 @@ public:
    void RemAresta(int _origem, int _destino, bool _bidir);
    TLista<Vertice>* buscaAmplitude(float _x, float _y);
    TLista<Vertice>* buscaProfundiade(float _x, float _y);
-   void dijkstra(float xi, float yi, float xf, float yf);
+   tuple<TLista<Vertice>*, double> dijkstra(float xi, float yi, float xf, float yf);
    void Print();
    ~TGrafo();
 };
@@ -293,6 +293,7 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
     vect.push_back(noV->getinfo()); ///insere o vertice inicial no vetor
     q->enqueue(noV->getinfo()); ///coloca na fila
     TLista<Vertice>* l = new TLista<Vertice>();
+    l->ins_fim(noV->getinfo());
     while(q->Size() > 0){
         noA = q->dequeue().getLArestas()->getprim();
         while(noA != nullptr){
@@ -312,25 +313,11 @@ TLista<Vertice>* TGrafo::buscaAmplitude(float _x, float _y){
             noA = noA->getprox();
         }
     }
-    noV = l->getprim();
-    system("cls");
-    cout << "Caminho percorrido pela busca em amplitude:" << endl;
-    cout << "------------------------------------------------" << endl;
-    cout << "|\tID\t|\tX\t|\tY\t|" << endl;
-    cout << "------------------------------------------------" << endl;
-    while(noV != nullptr){
-        cout << "|\t" << noV->getinfo().getid() << "\t|\t"
-             << noV->getinfo().getX() << "\t|\t"
-             << noV->getinfo().getY() << "\t|\t" << endl;
-        cout << "-----------------------------------------------" << endl;
-        noV = noV->getprox();
-    }
     if((int)l->size() == getordem()){ /// verifica se o tamanho da lista é = a ordem do grafo
-        cout << "\n Foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
+        cout << "\nFoi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
     } else{
-        cout << "\n\n Nao foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
+        cout << "\nNao foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
     }
-    system("PAUSE");
     return l;
 }
 
@@ -383,39 +370,31 @@ TLista<Vertice>* TGrafo::buscaProfundiade(float _x, float _y){
             stcka->pop();
         }
     }
-    noV = l->getprim();
-    system("cls");
-    cout << "Caminho percorrido pela busca em amplitude:" << endl;
-    cout << "------------------------------------------------" << endl;
-    cout << "|\tID\t|\tX\t|\tY\t|" << endl;
-    cout << "------------------------------------------------" << endl;
-    while(noV != nullptr){
-        cout << "|\t" << noV->getinfo().getid() << "\t|\t"
-             << noV->getinfo().getX() << "\t|\t"
-             << noV->getinfo().getY() << "\t|\t" << endl;
-        cout << "-----------------------------------------------" << endl;
-        noV = noV->getprox();
-    }
     if((int)l->size() == getordem()){ /// verifica se o tamanho da lista é = a ordem do grafo
         cout << "\n Foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
     } else{
         cout << "\n\n Nao foi possivel percorer todos os vertices a partir do ponto P(" << _x << ", " << _y << ").\n" << endl;
     }
-    system("PAUSE");
     return l;
 }
 
-void TGrafo::dijkstra(float xi, float yi, float xf, float yf){
+tuple<TLista<Vertice>*, double> TGrafo::dijkstra(float xi, float yi, float xf, float yf){
     int _origem = get<0>(getVerticePerXY(xi, yi));
     int _destino = get<0>(getVerticePerXY(xf, yf));
+    tuple<TLista<Vertice>*, double> ret;
+    get<0>(ret) = nullptr;
+    get<1>(ret) = -1;
     if(_origem == -1 && _destino == -1){
         cout << "Origem e Destino nao encontrados" << endl;
-        return;
+        system("PAUSE");
+        return ret;
     } else if(_origem == -1){
         cout << "Origem nao encontrada" << endl;
-        return;
+        system("PAUSE");
+        return ret;
     } else if(_destino == -1){
         cout << "Destino nao encontrado" << endl;
+        system("PAUSE");
     }
     double mat[getordem()][4];
     int i = 0;
@@ -480,13 +459,37 @@ void TGrafo::dijkstra(float xi, float yi, float xf, float yf){
     }
     mat[i][1] = 1;
 
-    for(int i = 0; i < (int)getordem(); i++){
-        for(int j = 0; j < 4; j++){
-            cout << "| " << mat[i][j] << " ";
-        }
-        cout << "|" << endl;
+    TLista<Vertice>* l = new TLista<Vertice>();
+    i = _destino;
+    if(mat[i][3] == -1){
+        cout << "Nao existe rota que ligue direta/indiramente os vertices: "
+             << mat[_origem][0] << "(" << getVerticeId(_origem)->getinfo().getX()
+             << ", " << getVerticeId(_origem)->getinfo().getY() << ") e"
+             << mat[_destino][0] << "(" << getVerticeId(_destino)->getinfo().getX()
+             << ", " << getVerticeId(_destino)->getinfo().getY() << ")." << endl;
+             return ret;
     }
+    cout << "Caminho Minimo utilizando Dijkstra" << endl;
+    cout << "Custo total para ir do V(" << xi << ", " << yi << ") ao V("
+         << xf << ", " << yf << "). eh de " << mat[_destino][2] << " unidades de distancia" << endl;
+    cout << "Vertices percorridos: " << endl << endl << "Inicio ";
+    while(mat[i][2] != 0){
+        l->ins_ini(getVerticeId(i)->getinfo());
+        i = mat[i][3];
+    }
+    l->ins_ini(getVerticeId(i)->getinfo());
+    noV = l->getprim();
+    while(noV != nullptr){
+        cout << noV->getinfo().getid() << "(" << noV->getinfo().getX()
+             << ", " << noV->getinfo().getY() << ") -> ";
+        noV = noV->getprox();
+    }
+    cout << "Fim" << endl;
     system("PAUSE");
+
+    get<0>(ret) = l;
+    get<1>(ret) = mat[_destino][2];
+    return ret;
 }
 
 TGrafo::~TGrafo(){

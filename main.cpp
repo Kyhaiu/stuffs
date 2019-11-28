@@ -6,12 +6,7 @@
 
 using namespace std;
 
-int nextToken(string linha, int i){
-  while(linha[i] != ' ' && linha[i] != '\0') i++;
-  return i;
-}
-
-void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa, float xi, float yi, float xf, float yf){
+void adicionarNoGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa, float xi, float yi, float xf, float yf){
     ///pesquisa pra ver se jс tem cadastrado o vertice, caso nуo tenha o 1А parametro retorna -1
     tuple<int, long, long> verI = grafo->getVerticePerXY(xi, yi);///pesquiza o vertice pelo x e y inicial(caso nao exista retorna -1 no 1° elemento da tupla
     tuple<int, long, long> verF = grafo->getVerticePerXY(xf, yf);
@@ -27,15 +22,15 @@ void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa,
         id++;
         if(imp_positiva != -1 && imp_negativa != -1){///caso as duas impedancias forem diferentes de -1 significa que a aresta que liga os dois vertices tem sentido duplo
             name = "Aresta " + to_string(id-2) + "<->" + to_string(id-1); ///monta o nome da aresta como : "Aresta id-2(x,y inicial) <-> e id-1(x,y final)
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));///calcula a distancia euclidiana entre as cordenadas
+            dist = imp_positiva;
             grafo->AddAresta(id-2, id-1, name, dist, true);///cria a aresta
         } else if(imp_positiva != -1){/// se a impedancia positiva for  != -1 entao tem sentido inicio=>fim
             name = "Aresta " + to_string(id-2) + "->" + to_string(id-1); ///mesma coisa do trecho acime
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_positiva;
             grafo->AddAresta(id-2, id-1, name, dist, false);
         } else if(imp_negativa != -1){ /// se a impedancia negatica for != -1 entao tem sentido fim inicio
             name = "Aresta " + to_string(id-1) + "->" + to_string(id-2);
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_negativa;
             grafo->AddAresta(id-1, id-2, name, dist, false);
         }
     } else if(get<0>(verI) == -1){///caso o elemento 0 da tupla verI(vertice inicial) for  = a -1 signifiica que o vertice inicial nao esta cadastrado
@@ -44,15 +39,15 @@ void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa,
         id++;
         if(imp_positiva != -1 && imp_negativa != -1){///mesma coisa dos enterirores, só que ele pega o valor da tupla verF(Vertice final)
             name = "Aresta " + to_string(id-1) + "<->" + to_string(get<0>(verF));
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_positiva;
             grafo->AddAresta(id-1, get<0>(verF), name, dist, true);
         } else if(imp_positiva != -1){
             name = "Aresta " + to_string(id-1) + "->" + to_string(get<0>(verF));
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_positiva;
             grafo->AddAresta(id-1, get<0>(verF), name, dist, false);
         } else if(imp_negativa != -1){
             name = "Aresta " + to_string(get<0>(verF)) + "->" + to_string(id-1);
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_negativa;
             grafo->AddAresta(get<0>(verF), id-1, name, dist, false);
         }
     } else if(get<0>(verF) == -1){ /// caso o 1° elemento da tupla verF(vertice final) for = -1 então o vertice final nao existe
@@ -61,30 +56,29 @@ void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa,
         id++;
         if(imp_positiva != -1 && imp_negativa != -1){///mesma condiçao dos anteriores
             name = "Aresta " + to_string(get<0>(verI)) + "<->" + to_string(id-1);
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_positiva;
             grafo->AddAresta(get<0>(verI), id-1, name, dist, true);
         } else if(imp_positiva != -1){
             name = "Aresta " + to_string(get<0>(verI)) + "->" + to_string(id-1);
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_positiva;
             grafo->AddAresta(get<0>(verI), id-1, name, dist, false);
         } else if(imp_negativa != -1){
             name = "Aresta " + to_string(id-1) + "->" + to_string(get<0>(verI));
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_negativa;
             grafo->AddAresta(id-1, get<0>(verI), name, dist, false);
         }
     }else{///caso ele esteja fazendo a ligação entre dois vertices já cadastrados
-
         if(imp_positiva != -1 && imp_negativa != -1){
             name = "Aresta " + to_string(get<0>(verI)) + "<->" + to_string(get<0>(verF));
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_positiva;
             grafo->AddAresta(get<0>(verI), get<0>(verF) , name, dist, true);
         } else if(imp_positiva != -1){
             name = "Aresta " + to_string(get<0>(verI)) + "->" + to_string(get<0>(verF));
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_positiva;
             grafo->AddAresta(get<0>(verI), get<0>(verF), name, dist, false);
         } else if(imp_negativa != -1){
             name = "Aresta " + to_string(get<0>(verF)) + "->" + to_string(get<0>(verI));
-            dist = sqrt(pow(xf-xi, 2) + pow(yf-yi, 2));
+            dist = imp_negativa;
             grafo->AddAresta(get<0>(verF), get<0>(verI), name, dist, false);
         }
     }
@@ -92,17 +86,21 @@ void montarGrafo(TGrafo* grafo, int &id, float imp_positiva, float imp_negativa,
 
 TGrafo* lerArquivo(string nomeArquivo){///função responsavel por ler do arquivo .txt e passar pra classe TGrafo
     TGrafo* grafo = new TGrafo();
+    cout << nomeArquivo << endl;
     FILE * arquivo =  fopen(nomeArquivo.data(), "r");
     int id = 0, trash = 0;
     float  imp_positiva, imp_negativa, xi, yi, xf, yf, t;
     /// ele le por blocos( o separador de blocos щ END
-    //fseek(arquivo, 4, SEEK_SET);
+    fscanf(arquivo, "//Formato\n");
+    fscanf(arquivo, "// IdLinha Impedancia_positiva Impedancia_negativa Demanda\n");
+    fscanf(arquivo, "// X_inicial Y_inicial\n");
+    fscanf(arquivo, "// X_final Y_final\n");
     if (arquivo != nullptr){
         while (fscanf(arquivo, "%d %f %f %f\n", &trash, &imp_positiva, &imp_negativa, &t) != EOF){///enquanto nao for final do arquivo ele le o id do vertice, impedancia positiva e negativa e a dependencia(nao usa pra nada)
             fscanf(arquivo, "%f %f\n", &xi, &yi);///le o x e y inicial
             fscanf(arquivo, "%f %f\n", &xf, &yf);///le o x e y final
             fscanf(arquivo, "END\n");///le o END de cada aresta
-            montarGrafo(grafo, id, imp_positiva, imp_negativa, xi, yi, xf, yf);///chama a funcao coloca os parametros lidos em cada bloco, dentro da classe TGFAFO
+            adicionarNoGrafo(grafo, id, imp_positiva, imp_negativa, xi, yi, xf, yf);///chama a funcao coloca os parametros lidos em cada bloco, dentro da classe TGFAFO
         }
         fclose(arquivo);
     } else{
@@ -111,14 +109,16 @@ TGrafo* lerArquivo(string nomeArquivo){///função responsavel por ler do arquiv
     return grafo;///retorna o grafo montado
 }
 
-void menu(){
+int main(){
     int i = 0;
     float xi, yi, xf, yf;
     bool lido = false;
     TGrafo *g;
+    TNo<Vertice>* v;
     string arquivo;
     do{
         system("cls");
+        cout << "\tTrabalho 02 - ED" << endl;
         cout << "1 - Ler grafo do arquivo texto" << endl;
         cout << "2 - Busca em amplitude" << endl;
         cout << "3 - Busca em profundiade" << endl;
@@ -128,7 +128,8 @@ void menu(){
         cout << "Opcao: ";
         cin >> i;
         if(i == 1){
-            cout << "Informe o nome do arquivo+extenчуo(.txt), que contenha o nome os dados do grafo: " << endl;
+            cout << "Informe o nome do arquivo+extencao(.txt), que contenha os dados do grafo: " << endl;
+            cout << "Nome do arquivo: ";
             cin >> arquivo;
             lido = true;
             g = lerArquivo(arquivo);
@@ -139,14 +140,30 @@ void menu(){
             cin >> xi;
             cout << "Informe o Y: ";
             cin >> yi;
-            g->buscaAmplitude(xi,yi);
+            v = g->buscaAmplitude(xi,yi)->getprim();
+            if(v != nullptr){
+                cout << "Vertices percoridos utilizando a busca em Amplitude: " << endl << "Inicio ";
+                while(v != nullptr){
+                        cout << v->getinfo().getid() << "(" << v->getinfo().getX() << ", " << v->getinfo().getY() << ") ->";
+                        v = v->getprox();
+                }
+                cout << " Fim" << endl;
+            }
             system("PAUSE");
         } else if(i == 3 && lido){
             cout << "Informe o X: ";
             cin >> xi;
             cout << "Informe o Y: ";
             cin >> yi;
-            g->buscaProfundiade(xi,yi);
+            v = g->buscaProfundiade(xi,yi)->getprim();
+            if(v != nullptr){
+                cout << "Vertices percoridos utilizando a busca em Profundidade: " << endl << "Inicio ";
+                while(v != nullptr){
+                        cout << v->getinfo().getid() <<"(" << v->getinfo().getX() << ", " << v->getinfo().getY() << ") ->";
+                        v = v->getprox();
+                }
+            }
+            cout << " Fim" << endl;
             system("PAUSE");
         } else if(i == 4 && lido){
             cout << "Informe o X inicial: ";
@@ -161,29 +178,28 @@ void menu(){
         } else if(i == 5){
             cout << "\t\t\t\t\tTrabalho 02(Grafos) - ED" << endl;
             cout << "\tEste programa foi desenvolvido como solicitado pelo professor Adair Costa,\n"
-                 << "\tpara a obtencao de nota na disciplina de Estrutura de Dados(2А ano) - Unioeste Cascavel - PR.\n" << endl;
+                 << "\tcomo trabalho da disciplina de Estrutura de Dados - Unioeste Cascavel - PR.\n" << endl;
             cout << "\tAs funcionalidades desenvolvidas nesse programa foram:\n"
                  << "\t\t * Ler e interpretar as informacoes contidas no arquivo .txt, e com elas montar um grafo\n"
-                 << "\t\t * Realizar operacoes de Busca em Amplitude e Profundidade\n"
-                 << "\t\t * Executar o algoritmo de Dijkstra buscando encontra o menor caminho entra dois vertices\n"
-                 << "\t\t * Determinar se dado um vertice inicial e possivel percorrer todo o grafo\n" << endl;
-            cout << "\tTrabalho desenvolvido por Marcos A. Campagnaro, Roberval, Requiao Jnr. e Igor A. Engler\n\n" << endl;
-            cout << "Duvidas sobre o funcionamento do programa/codigo, se possivel envie um e-mail para : marcosmuce@gmail.com\n"
-                 << "com o assunto 'Duvida Trabalho02'" << endl;
-
+                 << "\t\t * Realizar operacoes de Busca em Amplitude e Profundidade, para verificar se dado um vertice inicial, \n\t\t   eh possivel percorrer todos os vertices do grafo. E retornar uma lista com o caminho percorrido\n"
+                 << "\t\t * Executar o algoritmo de Dijkstra buscando encontrar o menor caminho entre dois vertices\n";
+            cout << "\tTrabalho desenvolvido por Marcos A. Campagnaro, Roberval Requiao Jnr. e Igor A. Engler\n\n" << endl;
+            cout << "\tCom orientacao de Adair Costa\n" << endl;
+            cout << "\tMotivacao:" << endl << endl;
+            cout << "\tA motivacao para o Roberval eh terminar a faculdade logo para poder ganhar dinheiro e dar uma condicao de vida melhor a sua filha" << endl;
+            cout << "\tJa a motivacao do Igor eh concluir a faculade e poder ir trabalhar fora do pais, tendo estudado numa das melhores faculdades do Brasil" << endl;
+            cout << "\tPor outro lado a motivacao do Marcos eh logicamente terminar a faculdade e poder ir trabalhar em algum instituto de pesquisa espacial como NASA, AAE, CAA, entre outros" << endl;
             system("PAUSE");
-        } else if(i == 6){
-        } else if(!lido && i > 1 && i < 6){
+        } else if(!lido && i > 1 && i < 5){
             cout << "Por favor antes de executar qualquer operacao, carregue os valores do grafo utilizando a Op. 1" << endl;
             system("PAUSE");
-        }else{
-            cout << "Opcao invalida" << endl;
+        }else if(i > 6 || i <= 0){
+            cin.clear();
+            fflush(stdin);
             i = 0;
+            cout << "Opcao invalida" << endl;
+            cin.clear();
             system("PAUSE");
         }
     }while(i != 6);
-}
-
-int main(){
-    menu();
 }

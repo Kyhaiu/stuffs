@@ -1,23 +1,16 @@
 #include <bits/stdc++.h>
 
 ///Função que converte um numero decimal inteiro para binário, e retorna uma string
-std::string decimal_to_binary(int n){ 
-    int binary_number[5]; //vetor que armazenara o numero binário
-  
-    int i = 0; 
-    while (n > 0) { 
-  
-        binary_number[i] = n % 2; //armazena o resto no vetor inteiro
-        n = n / 2; 
-        i++; 
+int binary_to_decimal(std::string n){ 
+    int number_decimal;
+
+    for(int i = 0; i < n.length(); i++){
+        if((n[i] - '0')){
+            number_decimal += pow(2, i);
+            
+        }
     }
-
-    std::string number;
-
-    for (int i = 0; i < 5; i++)
-        number.push_back(binary_number[i] + '0'); //realiza a conversão de inteiro para char e armazena na string que sera retornanda
-
-    return number;
+    return number_decimal;
 }
 
 void get_parity_bits_from_original(int *_array_parity_bits, std::string word){
@@ -42,28 +35,25 @@ void get_parity_bits_from_original(int *_array_parity_bits, std::string word){
 
 void get_parity_bits_from_recived(int *_array_parity_bits, std::string word){
     std::reverse(word.begin(), word.end());
-    _array_parity_bits[0] = word[0] - '0';
-    _array_parity_bits[1] = word[1] - '0';
-    _array_parity_bits[2] = word[2] - '0';
-    _array_parity_bits[3] = word[3] - '0';
-    _array_parity_bits[4] = word[4] - '0';
+    _array_parity_bits[0] = (word[0] - '0');
+    _array_parity_bits[1] = (word[1] - '0');
+    _array_parity_bits[2] = (word[2] - '0');
+    _array_parity_bits[3] = (word[3] - '0');
+    _array_parity_bits[4] = (word[4] - '0');
 }
 
 int get_inverted_bit_index(int *parity_original, int *parity_recived){
     std::string index_inverted_bit;
     for(int i = 0; i < 5; i++){
         index_inverted_bit.push_back((parity_original[i] ^ parity_recived[i]) + '0');
+        std::cout << parity_original[i] << " " << parity_recived[i] << std::endl;
     }
 
-    for(int i = 0; i < 5; i++){
-        std::cout << index_inverted_bit[i];
-    }
-
-    return (std::stoi(index_inverted_bit));
+    return (binary_to_decimal(index_inverted_bit));
 }
 
 void inverted_bit_correction(std::string word, int index_inverted_bit){
-    
+    std::cout << index_inverted_bit << std::endl;
 }
 
 int main (){
@@ -79,6 +69,7 @@ int main (){
         get_parity_bits_from_recived(parity_recived, word);
         inverted_bit_correction(word, get_inverted_bit_index(parity_original, parity_recived));
         ///std::cout << decimal_to_binary(std::stoi(word)) << std::endl;
+        std::cout << "\n";
     }
     
     return 0;

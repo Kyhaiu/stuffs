@@ -1,4 +1,14 @@
 #include <bits/stdc++.h>
+///Código de decodificação do hamming - Marcos Augusto Campagnaro
+
+
+std::map<std::string, int> bit_position{
+                                {"21", 0}, {"20", 1}, {"19", 2}, {"18", 3}, {"17", 4}, {"15", 5},
+                                {"14", 6}, {"13", 7}, {"12", 8}, {"11", 9}, {"10", 10}, {"9", 11},
+                                {"7", 12}, {"6", 13}, {"5", 14}, {"3", 15}, {"16", 16}, {"8", 17},
+                                {"4", 18}, {"2", 19}, {"1", 20}, {"0", -1}
+                               }; 
+
 
 ///Função que converte um numero decimal inteiro para binário, e retorna uma string
 int binary_to_decimal(std::string n){ 
@@ -13,13 +23,13 @@ int binary_to_decimal(std::string n){
     return number_decimal;
 }
 
-void get_parity_bits_from_original(int *_array_parity_bits, std::string word){
+void get_parity_bits_from_recived(int *_array_parity_bits, std::string word){
     /*
-        c1  = d1 d2 d4 d5 d7 d9 d11 d12 d14 d16 
-        c2  = d1 d3 d4 d6 d7 d10 d11 d13 d14
-        c4  = d2 d3 d4 d8 d9 d10 d11 d15 d16
-        c8  = d5 d6 d7 d8 d9 d10 d11 
-        c16 = d12 d13 d14 d15 d16
+        P1  = D0 + D1 + D3 + D4 + D6 + D8 + D10 + D11 + D13 + D15
+        P2  = D0 + D2 + D3 + D5 + D6 + D9 + D10 + D12 + D13
+        P4  = D1 + D2 + D3 + D7 + D8 + D9 + D10 + D14 + D15
+        P8  = D4 + D5 + D6 + D7 + D8 + D9 + D10
+        P16 = D11 + D12 + D13 + D14 + D15
 
         indice do vetor começa em 0, e o do hamming começa em 1. Pois o 0 no hamming significa que não tem que alterar nenhum indice.
         +5   : nos indices pois é revertido para ficar mais legivel, e os bits de partidade estão nas 5 ultimas posições.
@@ -33,7 +43,7 @@ void get_parity_bits_from_original(int *_array_parity_bits, std::string word){
     _array_parity_bits[4] = (word[11+5] - '0') ^ (word[12+5] - '0') ^ (word[13+5] - '0') ^ (word[14+5] - '0') ^ (word[15+5] - '0');
 }
 
-void get_parity_bits_from_recived(int *_array_parity_bits, std::string word){
+void get_parity_bits_from_original(int *_array_parity_bits, std::string word){
     std::reverse(word.begin(), word.end());
     _array_parity_bits[0] = (word[0] - '0');
     _array_parity_bits[1] = (word[1] - '0');
@@ -46,31 +56,71 @@ int get_inverted_bit_index(int *parity_original, int *parity_recived){
     std::string index_inverted_bit;
     for(int i = 0; i < 5; i++){
         index_inverted_bit.push_back((parity_original[i] ^ parity_recived[i]) + '0');
-        std::cout << parity_original[i] << " " << parity_recived[i] << std::endl;
+        //std::cout << index_inverted_bit[i] << std::endl;
     }
-
-    return (binary_to_decimal(index_inverted_bit));
+    return bit_position[std::to_string(binary_to_decimal(index_inverted_bit))];
 }
 
-void inverted_bit_correction(std::string word, int index_inverted_bit){
-    std::cout << index_inverted_bit << std::endl;
+std::string inverted_bit_correction(std::string word, int index_inverted_bit){
+    std::string fixed_word;
+    fixed_word = word;
+    fixed_word[index_inverted_bit] = (!(word[index_inverted_bit] - '0') + '0');
+    return fixed_word;
+}
+
+std::string remove_parity_bits(std::string word){
+    std::string word_without_parity_bits;
+    for(int i = 0; i < word.length() - 5; i++){
+        word_without_parity_bits.push_back(word[i]);
+    }
+    return word_without_parity_bits;
+}
+
+std::string decode(std::string word){
+    int parity_original[5]; //paridades dos bits recebidos
+    int parity_recived[5]; //paridades dos bits recebidos
+    int index_inverted_bit;
+    std::string fixed_word;
+
+    get_parity_bits_from_original(parity_original, word);
+    get_parity_bits_from_recived(parity_recived, word);
+
+    /*std::cout << "Paridade original: ";
+    for(int i = 0; i < 5; i++)
+        std::cout << parity_original[i];
+
+    std::cout << "\nParidade recebida: ";
+    for(int i = 0; i < 5; i++)
+        std::cout << parity_recived[i];*/
+
+    index_inverted_bit = get_inverted_bit_index(parity_original, parity_recived);
+
+    if(index_inverted_bit == - 1){
+        fixed_word = word;
+    } else{
+        fixed_word = inverted_bit_correction(word, index_inverted_bit);
+    }
+    
+    /*std::cout << "Palavra Recebida                : " << word << std::endl;
+    std::cout << "Palavra Corrigida               : " << fixed_word << std::endl;
+    std::cout << "Index do erro                   : " << index_inverted_bit << std::endl;
+    std::cout << "Palavra sem os bits de paridade : " << remove_parity_bits(fixed_word) << std::endl;
+    std::cout << "\n\n";*/
+    std::string true_word = remove_parity_bits(fixed_word);
+    return true_word;
 }
 
 int main (){
     int n = 0;
-    int parity_original[5]; //paridades dos bits recebidos
-    int parity_recived[5]; //paridades dos bits recebidos
     std::string word;
     std::cin >> n;
 
     for(int i = 0; i < n; i++){
         std::cin >> word;
-        get_parity_bits_from_original(parity_original, word);
-        get_parity_bits_from_recived(parity_recived, word);
-        inverted_bit_correction(word, get_inverted_bit_index(parity_original, parity_recived));
-        ///std::cout << decimal_to_binary(std::stoi(word)) << std::endl;
-        std::cout << "\n";
+        std::cout << decode(word) << std::endl;
     }
+
+    std::system("PAUSE");
     
     return 0;
 }
